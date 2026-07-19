@@ -29,9 +29,6 @@ Call center leaders are usually stitching this picture together from separate AC
 
 ![Customer Experience](screenshots/customers.png)
 
-![Call Center Analytics](screenshots/Call_Center.mp4)
-
-
 ## Key DAX Techniques
 - Weighted average measures (e.g., weighted AHT across call types, not a simple average)
 - Shift-specific Overload Ratio baselines using `SWITCH()` to apply different thresholds per shift

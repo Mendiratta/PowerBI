@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Growth Command Center — KPI Dashboard</title>
+<link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#14161c;
+  --panel:#1b1e26;
+  --panel2:#20232c;
+  --border:#2b2f3a;
+  --amber:#f0a500;
+  --amber-dim:#8a6b1f;
+  --text:#eceef2;
+  --text-dim:#9aa0ad;
+  --green:#3ecf8e;
+  --red:#e2584a;
+  --font-display: 'Georgia', 'Iowan Old Style', serif;
+  --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'SF Mono', 'Consolas', monospace;
+}
+*{box-sizing:border-box;}
+body{
+  margin:0; background:var(--bg); color:var(--text);
+  font-family:var(--font-body); font-size:14px;
+}
+.wrap{max-width:1400px; margin:0 auto; padding:22px 28px 60px;}
+
+/* HEADER */
+header{
+  display:flex; justify-content:space-between; align-items:flex-end;
+  border-bottom:1px solid var(--border); padding-bottom:16px; margin-bottom:20px;
+  flex-wrap:wrap; gap:14px;
+}
+.brand{display:flex; align-items:center; gap:12px;}
+.brand-mark{
+  width:140px; height:38px; border:1.5px solid var(--amber); border-radius:2px;
+  display:flex; align-items:center; justify-content:center;
+  font-family:var(--font-display); font-size:18px; color:var(--amber); font-weight:bold;
+}
+.brand h1{font-family:var(--font-display); font-size:22px; margin:0; letter-spacing:0.3px;}
+.brand .sub{color:var(--text-dim); font-size:12px; margin-top:2px;}
+.header-right{display:flex; gap:10px; align-items:center; flex-wrap:wrap;}
+.pill{
+  background:var(--panel2); border:1px solid var(--border); border-radius:20px;
+  padding:6px 14px; font-size:12px; color:var(--text-dim); display:flex; align-items:center; gap:6px;
+}
+.pill .dot{width:7px; height:7px; border-radius:50%; background:var(--green);}
+select, .filter-btn{
+  background:var(--panel2); border:1px solid var(--border); color:var(--text);
+  padding:7px 12px; border-radius:6px; font-size:12.5px; font-family:var(--font-body); cursor:pointer;
+}
+
+/* TABS */
+.tabs{display:flex; gap:2px; margin-bottom:22px; border-bottom:1px solid var(--border); overflow-x:auto;}
+.tab{
+  padding:10px 16px; font-size:13px; color:var(--text-dim); cursor:pointer;
+  border-bottom:2px solid transparent; white-space:nowrap; user-select:none;
+}
+.tab:hover{color:var(--text);}
+.tab.active{color:var(--amber); border-bottom:2px solid var(--amber);}
+.view{display:none;}
+.view.active{display:block; animation:fade .25s ease;}
+@keyframes fade{from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:translateY(0);}}
+
+/* KPI CARDS */
+.kpi-grid{display:grid; grid-template-columns:repeat(6,1fr); gap:12px; margin-bottom:22px;}
+@media(max-width:1200px){.kpi-grid{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:640px){.kpi-grid{grid-template-columns:repeat(2,1fr);}}
+.kpi{
+  background:var(--panel); border:1px solid var(--border); border-radius:8px; padding:14px 16px;
+  position:relative; overflow:hidden;
+}
+.kpi::before{
+  content:''; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--amber-dim);
+}
+.kpi.hero::before{background:var(--amber);}
+.kpi .label{font-size:11px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.5px;}
+.kpi .value{font-family:var(--font-display); font-size:22px; margin-top:6px; letter-spacing:0.2px;}
+.kpi .delta{font-size:11.5px; margin-top:5px; display:flex; align-items:center; gap:4px;}
+.delta.up{color:var(--green);} .delta.down{color:var(--red);}
+
+/* PANELS */
+.panel{
+  background:var(--panel); border:1px solid var(--border); border-radius:8px;
+  padding:18px 20px; margin-bottom:20px;
+}
+.panel h3{font-family:var(--font-display); font-size:15px; margin:0 0 4px; font-weight:normal;}
+.panel .desc{color:var(--text-dim); font-size:12px; margin-bottom:14px;}
+.grid-2{display:grid; grid-template-columns:1.4fr 1fr; gap:18px;}
+.grid-3{display:grid; grid-template-columns:repeat(3,1fr); gap:18px;}
+@media(max-width:1000px){.grid-2,.grid-3{grid-template-columns:1fr;}}
+canvas{max-width:100%;}
+
+/* TABLES */
+table{width:100%; border-collapse:collapse; font-size:12.5px;}
+th{
+  text-align:left; color:var(--text-dim); font-weight:normal; text-transform:uppercase;
+  font-size:10.5px; letter-spacing:0.4px; padding:8px 10px; border-bottom:1px solid var(--border);
+  cursor:pointer; white-space:nowrap;
+}
+th:hover{color:var(--amber);}
+td{padding:9px 10px; border-bottom:1px solid #23262f; white-space:nowrap;}
+tr:hover td{background:#20232c;}
+.tag{
+  padding:2px 8px; border-radius:10px; font-size:10.5px; font-weight:bold;
+}
+.tag.win{background:rgba(62,207,142,0.15); color:var(--green);}
+.tag.lose{background:rgba(226,88,74,0.15); color:var(--red);}
+.tag.mid{background:rgba(240,165,0,0.15); color:var(--amber);}
+.num{font-family:var(--font-mono); text-align:right;}
+th.num{text-align:right;}
+
+/* FUNNEL */
+.funnel{display:flex; flex-direction:column; gap:2px; max-width:640px; margin:0 auto;}
+.funnel-row{display:flex; align-items:center; gap:14px;}
+.funnel-bar{
+  height:46px; background:linear-gradient(90deg, var(--amber-dim), var(--amber));
+  border-radius:4px; display:flex; align-items:center; padding:0 16px;
+  font-family:var(--font-mono); font-weight:bold; color:#14161c;
+}
+.funnel-label{width:150px; font-size:12.5px; color:var(--text-dim); text-align:right;}
+.funnel-conv{width:90px; font-size:11.5px; color:var(--green); font-family:var(--font-mono);}
+
+.legend-row{display:flex; gap:16px; flex-wrap:wrap; margin-top:10px; font-size:11.5px; color:var(--text-dim);}
+.legend-row span{display:flex; align-items:center; gap:6px;}
+.legend-dot{width:8px; height:8px; border-radius:2px;}
+
+.section-label{
+  font-size:11px; text-transform:uppercase; letter-spacing:1px; color:var(--amber-dim);
+  margin-bottom:8px; font-family:var(--font-mono);
+}
+footer{text-align:center; color:var(--text-dim); font-size:11.5px; margin-top:30px; padding-top:16px; border-top:1px solid var(--border);}
+</style>
+
+</head>
+<body>  
+<div class="wrap">
+
+  <header>
+    <div class="brand">
+      <div class="brand-mark" style="border:none; padding:0; background:transparent;">
+        <img src="{{ url_for('static', filename='logo.svg') }}" alt="Mendiratta" style="height:50px; width:auto; display:block;">
+      </div>
+      <div>
+        <h1>Growth Command Center</h1>
+        <div class="sub">One dashboard. Every morning. The full health of the business.</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <span class="pill"><span class="dot"></span> Synced 6:00 AM daily</span>
+      <select id="dateRange">
+        <option>Last 90 days</option>
+        <option>Last 30 days</option>
+        <option>Last 7 days</option>
+        <option>Month to Date</option>
+        <option>Year to Date</option>
+      </select>
+      <select id="platformFilter">
+        <option value="All Platforms">All platforms</option>
+        <option>Facebook</option><option>Instagram</option><option>Google</option>
+        <option>TikTok</option><option>Organic</option><option>Referral</option><option>Email</option>
+      </select>
+      <select id="repFilter">
+        <option value="All Reps">All reps</option>
+        <option>Aarav Sharma</option><option>Priya Nair</option><option>Rohan Kapoor</option><option>Sneha Verma</option>
+      </select>
+    </div>
+  </header>
+
+  <div class="tabs">
+    <div class="tab active" data-view="exec">Executive Overview</div>
+    <div class="tab" data-view="campaign">Campaign Performance</div>
+    <div class="tab" data-view="ad">Ad / Creative Performance</div>
+    <div class="tab" data-view="platform">Platform Comparison</div>
+    <div class="tab" data-view="funnel">Sales Funnel</div>
+    <div class="tab" data-view="team">Sales Team</div>
+    <div class="tab" data-view="trends">Trends</div>
+  </div>
+
+  <!-- EXECUTIVE OVERVIEW -->
+  <div class="view active" id="view-exec">
+    <div class="kpi-grid" id="execKpis"></div>
+    <div class="grid-2">
+      <div class="panel">
+        <h3>Revenue vs. marketing spend</h3>
+        <div class="desc">Daily — last 90 days</div>
+        <canvas id="chartRevSpend" height="110"></canvas>
+      </div>
+      <div class="panel">
+        <h3>ROAS trend</h3>
+        <div class="desc">Return on ad spend, daily</div>
+        <canvas id="chartRoasMini" height="110"></canvas>
+      </div>
+    </div>
+    <div class="panel">
+      <h3>Top campaigns by revenue</h3>
+      <div class="desc">Where the money is actually coming from right now</div>
+      <table id="execCampaignTable"></table>
+    </div>
+  </div>
+
+  <!-- CAMPAIGN PERFORMANCE -->
+  <div class="view" id="view-campaign">
+    <div class="panel">
+      <h3>Campaign performance</h3>
+      <div class="desc">Click any column header to sort</div>
+      <table id="campaignTable"></table>
+    </div>
+    <div class="panel">
+      <h3>Spend vs. revenue by campaign</h3>
+      <canvas id="chartCampaignBar" height="90"></canvas>
+    </div>
+  </div>
+
+  <!-- AD PERFORMANCE -->
+  <div class="view" id="view-ad">
+    <div class="panel">
+      <h3>Ad / creative performance</h3>
+      <div class="desc">Green = winner (ROAS above account average) · Red = losing money · Sorted by ROAS</div>
+      <table id="adTable"></table>
+    </div>
+    <div class="panel">
+      <h3>Cost per lead vs. ROAS, by ad</h3>
+      <div class="desc">Bottom-right quadrant is where you want your budget</div>
+      <canvas id="chartAdScatter" height="110"></canvas>
+    </div>
+  </div>
+
+  <!-- PLATFORM COMPARISON -->
+  <div class="view" id="view-platform">
+    <div class="grid-2">
+      <div class="panel">
+        <h3>Revenue share by platform</h3>
+        <canvas id="chartPlatformDonut" height="220"></canvas>
+      </div>
+      <div class="panel">
+        <h3>ROAS by platform</h3>
+        <canvas id="chartPlatformRoas" height="220"></canvas>
+      </div>
+    </div>
+    <div class="panel">
+      <h3>Platform comparison</h3>
+      <table id="platformTable"></table>
+    </div>
+  </div>
+
+  <!-- SALES FUNNEL -->
+  <div class="view" id="view-funnel">
+    <div class="panel">
+      <h3>Sales funnel</h3>
+      <div class="desc">Leads → calls booked → calls completed → sales, with stage-to-stage conversion</div>
+      <div class="funnel" id="funnelChart"></div>
+    </div>
+    <div class="grid-3">
+      <div class="panel"><div class="section-label">Lead → Booked</div><div class="value" style="font-family:var(--font-display);font-size:26px" id="fConv1">—</div></div>
+      <div class="panel"><div class="section-label">Booked → Show</div><div class="value" style="font-family:var(--font-display);font-size:26px" id="fConv2">—</div></div>
+      <div class="panel"><div class="section-label">Show → Sale</div><div class="value" style="font-family:var(--font-display);font-size:26px" id="fConv3">—</div></div>
+    </div>
+  </div>
+
+  <!-- SALES TEAM -->
+  <div class="view" id="view-team">
+    <div class="panel">
+      <h3>Sales team performance</h3>
+      <table id="teamTable"></table>
+    </div>
+    <div class="panel">
+      <h3>Revenue by closer</h3>
+      <canvas id="chartTeamBar" height="90"></canvas>
+    </div>
+  </div>
+
+  <!-- TRENDS -->
+  <div class="view" id="view-trends">
+    <div class="header-right" style="margin-bottom:14px;">
+      <select id="trendMetric">
+        <option value="revenue">Revenue</option>
+        <option value="leads">Leads</option>
+        <option value="spend">Marketing spend</option>
+        <option value="roas">ROAS</option>
+        <option value="sales">Sales</option>
+      </select>
+      <select id="trendGranularity">
+        <option value="daily">Daily</option>
+        <option value="weekly">Weekly</option>
+        <option value="monthly">Monthly</option>
+      </select>
+    </div>
+    <div class="panel">
+      <h3 id="trendTitle">Revenue — daily</h3>
+      <canvas id="chartTrendMain" height="90"></canvas>
+    </div>
+  </div>
+
+  <footer>Growth Command Center — prototype built with synthetic sample data · Mendiratta Analytics</footer>
+</div>
+
+<script>
+/* ================= helpers ================= */
+const fmtINR = n => '₹' + Math.round(n).toLocaleString('en-IN');
+const fmtINRShort = n => {
+  if(n>=10000000) return '₹'+(n/10000000).toFixed(2)+'Cr';
+  if(n>=100000) return '₹'+(n/100000).toFixed(2)+'L';
+  if(n>=1000) return '₹'+(n/1000).toFixed(1)+'K';
+  return '₹'+Math.round(n);
+};
+const fmtNum = n => Math.round(n).toLocaleString('en-IN');
+const AMBER = '#f0a500', AMBER_DIM='#8a6b1f', GREEN='#3ecf8e', RED='#e2584a', TEXTDIM='#9aa0ad', GRID='#2b2f3a';
+
+Chart.defaults.color = TEXTDIM;
+Chart.defaults.font.family = "-apple-system, 'Segoe UI', sans-serif";
+Chart.defaults.font.size = 11;
+Chart.defaults.borderColor = GRID;
+
+let DATA = null;                 // current filtered payload from /api/data
+const charts = {};               // named Chart.js instances, so we can destroy+recreate on refresh
+
+function destroy(key){ if(charts[key]){ charts[key].destroy(); delete charts[key]; } }
+
+/* ================= TABS (unchanged) ================= */
+document.querySelectorAll('.tab').forEach(t=>{
+  t.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    document.getElementById('view-'+t.dataset.view).classList.add('active');
+  });
+});
+
+/* ================= FETCH + MASTER RENDER ================= */
+async function refresh(){
+  const dateRange = document.getElementById('dateRange').value;
+  const platform  = document.getElementById('platformFilter').value;
+  const rep       = document.getElementById('repFilter').value;
+
+  const params = new URLSearchParams({date_range: dateRange, platform, rep});
+  const res = await fetch('/api/data?' + params.toString());
+  DATA = await res.json();
+
+  renderExecKpis();
+  renderExecCharts();
+  renderExecCampaignTable();
+  renderCampaignTab();
+  renderAdTab();
+  renderPlatformTab();
+  renderFunnel();
+  renderTeamTab();
+  renderTrendTab();   // uses currently selected metric/granularity
+}
+
+['dateRange','platformFilter','repFilter'].forEach(id=>{
+  document.getElementById(id).addEventListener('change', refresh);
+});
+
+/* ================= EXEC KPIs ================= */
+function renderExecKpis(){
+  const ex = DATA.exec_summary;
+  const kpis = [
+    {label:'Revenue', value:fmtINRShort(ex.revenue), delta:'vs prior period', up:true, hero:true},
+    {label:'Marketing spend', value:fmtINRShort(ex.spend), delta:'vs prior period', up:false},
+    {label:'Leads', value:fmtNum(ex.leads), delta:'vs prior period', up:true},
+    {label:'Calls booked', value:fmtNum(ex.calls_booked), delta:'', up:true},
+    {label:'Calls completed', value:fmtNum(ex.calls_completed), delta:'Show rate '+ex.show_rate+'%', up:true},
+    {label:'Sales', value:fmtNum(ex.sales), delta:'vs prior period', up:true},
+    {label:'Avg. sale value', value:fmtINRShort(ex.avg_sale_value), delta:'stable', up:true},
+    {label:'ROAS', value:ex.roas+'x', delta:'target 8.0x', up: ex.roas>=8, hero:true},
+    {label:'Cost per lead', value:fmtINR(ex.cost_per_lead), delta:'', up:true},
+    {label:'Cost per sale', value:fmtINRShort(ex.cost_per_sale), delta:'', up:true},
+    {label:'Show rate', value:ex.show_rate+'%', delta:'target 75%', up: ex.show_rate>=70},
+    {label:'Close rate', value:(ex.calls_completed? (ex.sales/ex.calls_completed*100).toFixed(1):'0')+'%', delta:'of completed calls', up:true},
+  ];
+  document.getElementById('execKpis').innerHTML = kpis.map(k=>`
+    <div class="kpi ${k.hero?'hero':''}">
+      <div class="label">${k.label}</div>
+      <div class="value">${k.value}</div>
+      <div class="delta ${k.up?'up':'down'}">${k.up?'▲':'▼'} ${k.delta}</div>
+    </div>`).join('');
+}
+
+/* ================= EXEC charts ================= */
+function renderExecCharts(){
+  destroy('revSpend'); destroy('roasMini');
+
+  charts.revSpend = new Chart(document.getElementById('chartRevSpend'), {
+    type:'bar',
+    data:{ labels: DATA.trend.map(r=>r.date.slice(5)),
+      datasets:[
+        {type:'line', label:'Revenue', data: DATA.trend.map(r=>r.revenue), borderColor:AMBER, backgroundColor:AMBER, tension:0.3, pointRadius:0, yAxisID:'y'},
+        {type:'bar', label:'Spend', data: DATA.trend.map(r=>r.spend), backgroundColor:'#3a3e4a', yAxisID:'y'}
+      ]},
+    options:{responsive:true, interaction:{mode:'index', intersect:false},
+      scales:{ x:{ticks:{maxTicksLimit:10}, grid:{display:false}}, y:{ticks:{callback:v=>fmtINRShort(v)}, grid:{color:GRID}} },
+      plugins:{legend:{labels:{boxWidth:10}}} }
+  });
+
+  charts.roasMini = new Chart(document.getElementById('chartRoasMini'), {
+    type:'line',
+    data:{ labels: DATA.trend.map(r=>r.date.slice(5)),
+      datasets:[{label:'ROAS', data: DATA.trend.map(r=>r.roas), borderColor:GREEN, backgroundColor:'rgba(62,207,142,0.08)', fill:true, tension:0.3, pointRadius:0}]},
+    options:{responsive:true, scales:{x:{ticks:{maxTicksLimit:8}, grid:{display:false}}, y:{grid:{color:GRID}}}, plugins:{legend:{display:false}}}
+  });
+}
+
+function renderExecCampaignTable(){
+  const rows = DATA.campaign_table.slice(0,5);
+  document.getElementById('execCampaignTable').innerHTML = `
+    <thead><tr><th>Campaign</th><th>Platform</th><th class="num">Spend</th><th class="num">Leads</th><th class="num">Revenue</th><th class="num">ROAS</th></tr></thead>
+    <tbody>${rows.map(c=>`<tr>
+      <td>${c.campaign_name}</td><td>${c.platform}</td>
+      <td class="num">${fmtINRShort(c.spend)}</td>
+      <td class="num">${fmtNum(c.leads)}</td>
+      <td class="num">${fmtINRShort(c.revenue)}</td>
+      <td class="num">${c.roas}x</td>
+    </tr>`).join('')}</tbody>`;
+}
+
+/* ================= CAMPAIGN tab ================= */
+function renderCampaignTable(rows){
+  document.getElementById('campaignTable').innerHTML = `
+  <thead><tr>
+    <th>Campaign</th><th>Platform</th><th class="num">Spend</th><th class="num">Leads</th>
+    <th class="num">CPL</th><th class="num">Booked</th><th class="num">Completed</th><th class="num">Show %</th>
+    <th class="num">Sales</th><th class="num">Revenue</th><th class="num">ROAS</th><th class="num">CPS</th><th class="num">Conv %</th>
+  </tr></thead>
+  <tbody>${rows.map(c=>`<tr>
+    <td>${c.campaign_name}</td><td>${c.platform}</td>
+    <td class="num">${fmtINRShort(c.spend)}</td><td class="num">${fmtNum(c.leads)}</td>
+    <td class="num">${fmtINR(c.cost_per_lead)}</td><td class="num">${fmtNum(c.calls_booked)}</td>
+    <td class="num">${fmtNum(c.calls_completed)}</td><td class="num">${c.show_rate}%</td>
+    <td class="num">${fmtNum(c.sales)}</td><td class="num">${fmtINRShort(c.revenue)}</td>
+    <td class="num">${c.roas}x</td><td class="num">${fmtINRShort(c.cost_per_sale)}</td><td class="num">${c.conversion_rate}%</td>
+  </tr>`).join('')}</tbody>`;
+}
+const campaignCols = ['campaign_name','platform','spend','leads','cost_per_lead','calls_booked','calls_completed','show_rate','sales','revenue','roas','cost_per_sale','conversion_rate'];
+
+function renderCampaignTab(){
+  renderCampaignTable(DATA.campaign_table);
+  destroy('campaignBar');
+  charts.campaignBar = new Chart(document.getElementById('chartCampaignBar'), {
+    type:'bar',
+    data:{ labels: DATA.campaign_table.map(c=>c.campaign_name),
+      datasets:[
+        {label:'Spend', data: DATA.campaign_table.map(c=>c.spend), backgroundColor:'#3a3e4a'},
+        {label:'Revenue', data: DATA.campaign_table.map(c=>c.revenue), backgroundColor:AMBER}
+      ]},
+    options:{indexAxis:'y', responsive:true, scales:{x:{ticks:{callback:v=>fmtINRShort(v)}, grid:{color:GRID}}, y:{grid:{display:false}}}}
+  });
+}
+
+/* ================= AD tab ================= */
+function adTag(roas, avgRoas){
+  if(roas >= avgRoas*1.1) return '<span class="tag win">Winner</span>';
+  if(roas <= avgRoas*0.7) return '<span class="tag lose">Losing</span>';
+  return '<span class="tag mid">Watch</span>';
+}
+function renderAdTable(rows){
+  const avgRoas = DATA.exec_summary.roas;
+  document.getElementById('adTable').innerHTML = `
+  <thead><tr>
+    <th>Ad</th><th>Campaign</th><th class="num">Spend</th><th class="num">Leads</th>
+    <th class="num">CPL</th><th class="num">Sales</th><th class="num">Revenue</th><th class="num">ROAS</th><th class="num">Conv %</th><th>Status</th>
+  </tr></thead>
+  <tbody>${rows.map(a=>`<tr>
+    <td>${a.ad_name}</td><td>${a.campaign_id}</td>
+    <td class="num">${fmtINRShort(a.spend)}</td><td class="num">${fmtNum(a.leads)}</td>
+    <td class="num">${fmtINR(a.cost_per_lead)}</td><td class="num">${fmtNum(a.sales)}</td>
+    <td class="num">${fmtINRShort(a.revenue)}</td><td class="num">${a.roas}x</td><td class="num">${a.conversion_rate}%</td>
+    <td>${adTag(a.roas, avgRoas)}</td>
+  </tr>`).join('')}</tbody>`;
+}
+const adCols = ['ad_name','campaign_id','spend','leads','cost_per_lead','sales','revenue','roas','conversion_rate'];
+
+function renderAdTab(){
+  renderAdTable(DATA.ad_table);
+  const avgRoas = DATA.exec_summary.roas;
+  destroy('adScatter');
+  charts.adScatter = new Chart(document.getElementById('chartAdScatter'), {
+    type:'scatter',
+    data:{ datasets:[{
+      label:'Ads', data: DATA.ad_table.map(a=>({x:a.cost_per_lead, y:a.roas, label:a.ad_name})),
+      backgroundColor: DATA.ad_table.map(a=> a.roas>=avgRoas ? GREEN : RED), pointRadius:6, pointHoverRadius:8
+    }]},
+    options:{ scales:{ x:{title:{display:true,text:'Cost per lead (₹)'}, grid:{color:GRID}}, y:{title:{display:true,text:'ROAS'}, grid:{color:GRID}} },
+      plugins:{ legend:{display:false}, tooltip:{callbacks:{label:c=>c.raw.label+': CPL ₹'+c.raw.x.toFixed(0)+', ROAS '+c.raw.y+'x'}} } }
+  });
+}
+
+/* ================= PLATFORM tab ================= */
+function renderPlatformTab(){
+  destroy('platformDonut'); destroy('platformRoas');
+  charts.platformDonut = new Chart(document.getElementById('chartPlatformDonut'), {
+    type:'doughnut',
+    data:{ labels: DATA.platform_table.map(p=>p.platform),
+      datasets:[{data: DATA.platform_table.map(p=>p.revenue),
+        backgroundColor:[AMBER,'#c98a1f','#8a6b1f',GREEN,'#4a90a4','#6b7280','#3a3e4a']}]},
+    options:{plugins:{legend:{position:'right', labels:{boxWidth:10}}}}
+  });
+  charts.platformRoas = new Chart(document.getElementById('chartPlatformRoas'), {
+    type:'bar',
+    data:{ labels: DATA.platform_table.map(p=>p.platform),
+      datasets:[{label:'ROAS', data: DATA.platform_table.map(p=>p.roas), backgroundColor:AMBER}]},
+    options:{plugins:{legend:{display:false}}, scales:{y:{grid:{color:GRID}}, x:{grid:{display:false}}}}
+  });
+  document.getElementById('platformTable').innerHTML = `
+    <thead><tr><th>Platform</th><th class="num">Spend</th><th class="num">Leads</th><th class="num">CPL</th><th class="num">Sales</th><th class="num">Revenue</th><th class="num">ROAS</th></tr></thead>
+    <tbody>${DATA.platform_table.map(p=>`<tr>
+      <td>${p.platform}</td><td class="num">${fmtINRShort(p.spend)}</td><td class="num">${fmtNum(p.leads)}</td>
+      <td class="num">${p.cost_per_lead? fmtINR(p.cost_per_lead):'—'}</td><td class="num">${fmtNum(p.sales)}</td>
+      <td class="num">${fmtINRShort(p.revenue)}</td><td class="num">${p.roas? p.roas+'x':'—'}</td>
+    </tr>`).join('')}</tbody>`;
+}
+
+/* ================= FUNNEL ================= */
+function renderFunnel(){
+  const f = DATA.funnel;
+  const stages = [
+    {label:'Leads', value:f.leads},
+    {label:'Calls booked', value:f.calls_booked},
+    {label:'Calls completed', value:f.calls_completed},
+    {label:'Sales won', value:f.sales},
+  ];
+  document.getElementById('funnelChart').innerHTML = stages.map((s,i)=>{
+    const pct = stages[0].value ? (s.value/stages[0].value*100) : 0;
+    const convFromPrev = i>0 && stages[i-1].value ? (s.value/stages[i-1].value*100).toFixed(1)+'% →' : '';
+    return `<div class="funnel-row">
+      <div class="funnel-label">${s.label}</div>
+      <div class="funnel-bar" style="width:${pct}%">${fmtNum(s.value)}</div>
+      <div class="funnel-conv">${convFromPrev}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('fConv1').textContent = f.leads? (f.calls_booked/f.leads*100).toFixed(1)+'%':'—';
+  document.getElementById('fConv2').textContent = f.calls_booked? (f.calls_completed/f.calls_booked*100).toFixed(1)+'%':'—';
+  document.getElementById('fConv3').textContent = f.calls_completed? (f.sales/f.calls_completed*100).toFixed(1)+'%':'—';
+}
+
+/* ================= SALES TEAM ================= */
+function renderTeamTab(){
+  document.getElementById('teamTable').innerHTML = `
+    <thead><tr><th>Rep</th><th class="num">Calls completed</th><th class="num">Sales</th><th class="num">Close %</th><th class="num">Revenue</th><th class="num">Avg. sale value</th></tr></thead>
+    <tbody>${DATA.rep_table.map(r=>`<tr>
+      <td>${r.rep_name}</td><td class="num">${fmtNum(r.calls_completed)}</td><td class="num">${fmtNum(r.sales)}</td>
+      <td class="num">${r.close_rate}%</td><td class="num">${fmtINRShort(r.revenue)}</td><td class="num">${fmtINRShort(r.avg_sale_value)}</td>
+    </tr>`).join('')}</tbody>`;
+  destroy('teamBar');
+  charts.teamBar = new Chart(document.getElementById('chartTeamBar'), {
+    type:'bar',
+    data:{ labels: DATA.rep_table.map(r=>r.rep_name),
+      datasets:[{label:'Revenue', data: DATA.rep_table.map(r=>r.revenue), backgroundColor:AMBER}]},
+    options:{plugins:{legend:{display:false}}, scales:{y:{ticks:{callback:v=>fmtINRShort(v)},grid:{color:GRID}}, x:{grid:{display:false}}}}
+  });
+}
+
+/* ================= TRENDS tab ================= */
+function aggregateTrend(granularity){
+  const t = DATA.trend;
+  if(granularity==='daily') return t;
+  const groups = {};
+  t.forEach(r=>{
+    const d = new Date(r.date);
+    let key;
+    if(granularity==='weekly'){
+      const week = getWeekStart(d);
+      key = week.toISOString().slice(0,10);
+    } else {
+      key = r.date.slice(0,7);
+    }
+    if(!groups[key]) groups[key] = {date:key, spend:0, leads:0, calls_booked:0, calls_completed:0, sales:0, revenue:0};
+    groups[key].spend += r.spend; groups[key].leads += r.leads;
+    groups[key].calls_booked += r.calls_booked; groups[key].calls_completed += r.calls_completed;
+    groups[key].sales += r.sales; groups[key].revenue += r.revenue;
+  });
+  return Object.values(groups).map(g=>({...g, roas: g.spend? +(g.revenue/g.spend).toFixed(2):0}));
+}
+function getWeekStart(d){
+  const dt = new Date(d);
+  const day = dt.getDay();
+  const diff = dt.getDate() - day + (day===0?-6:1);
+  return new Date(dt.setDate(diff));
+}
+function renderTrendTab(){
+  const metric = document.getElementById('trendMetric').value;
+  const gran = document.getElementById('trendGranularity').value;
+  const data = aggregateTrend(gran);
+  const labels = data.map(d=> gran==='monthly' ? d.date : d.date.slice(5));
+  const vals = data.map(d=> d[metric]);
+  const metricLabel = {revenue:'Revenue', leads:'Leads', spend:'Marketing spend', roas:'ROAS', sales:'Sales'}[metric];
+  document.getElementById('trendTitle').textContent = `${metricLabel} — ${gran}`;
+  destroy('trendMain');
+  charts.trendMain = new Chart(document.getElementById('chartTrendMain'), {
+    type: metric==='roas' ? 'line' : 'bar',
+    data:{ labels, datasets:[{
+      label: metricLabel, data: vals,
+      backgroundColor: metric==='roas' ? 'rgba(62,207,142,0.1)' : AMBER,
+      borderColor: metric==='roas' ? GREEN : AMBER,
+      fill: metric==='roas', tension:0.3, pointRadius: metric==='roas'?0:undefined
+    }]},
+    options:{ responsive:true,
+      scales:{ x:{ticks:{maxTicksLimit:14}, grid:{display:false}},
+        y:{ ticks:{callback:v=> metric==='revenue'||metric==='spend' ? fmtINRShort(v) : (metric==='roas'? v+'x' : fmtNum(v))}, grid:{color:GRID}} },
+      plugins:{legend:{display:false}} }
+  });
+}
+document.getElementById('trendMetric').addEventListener('change', renderTrendTab);
+document.getElementById('trendGranularity').addEventListener('change', renderTrendTab);
+
+/* ================= sortable table helper ================= */
+function makeSortable(tableId, getRows, renderFn, cols){
+  let sortCol = null, asc = true;
+  document.getElementById(tableId).addEventListener('click', e=>{
+    const th = e.target.closest('th');
+    if(!th) return;
+    const idx = Array.from(th.parentElement.children).indexOf(th);
+    const col = cols[idx];
+    if(!col) return;
+    asc = (sortCol===col) ? !asc : true;
+    sortCol = col;
+    const sorted = [...getRows()].sort((a,b)=>{
+      const va=a[col], vb=b[col];
+      if(typeof va==='string') return asc ? va.localeCompare(vb) : vb.localeCompare(va);
+      return asc ? va-vb : vb-va;
+    });
+    renderFn(sorted);
+  });
+}
+makeSortable('campaignTable', ()=>DATA.campaign_table, renderCampaignTable, campaignCols);
+makeSortable('adTable', ()=>DATA.ad_table, renderAdTable, adCols);
+
+/* ================= INIT ================= */
+refresh();
+</script>
+</body>
+</html>

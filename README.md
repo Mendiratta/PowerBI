@@ -3,7 +3,8 @@
 Hi, I'm Vikram Mendiratta — an FP&A and Business Intelligence professional with 18+ years of experience, now building end-to-end analytics solutions using Power BI, DAX, SQL, and Python.
 
 - 18+ years in FP&A across Genpact, Carrier Midea India, Hughes Communications, Cure Chem India, and Mynd Solutions
-- Data Science & AI Certification - IIT Roorkee; MBA in Business Analytics
+- MBA in Business Analytics
+- Data Science & AI Certification - IIT Roorkee; 
 - PL-300 (Power BI Data Analyst) Certification in Progress
 - Open for freelance Power BI / Excel reporting projects — [UpWork](https://www.upwork.com/freelancers/~01c49d03c2f8ee07d9?mp_source=share)
 
@@ -12,13 +13,17 @@ Hi, I'm Vikram Mendiratta — an FP&A and Business Intelligence professional wit
 
 | Project | Description | Key Skills |
 |---|---|---|
-| [Sales & Receivables Analytics](./sales-receivables-analytics) | DSO, CEI, and aging-bucket analysis for a distribution business | Star schema, point-in-time DAX, measure dispatcher pattern |
+| [Sales & Receivables Analytics](./receivables) | DSO, CEI, and aging-bucket analysis for a distribution business | Star schema, point-in-time DAX, measure dispatcher pattern |
 | [Call Center Analytics](./call-center) | Staffing, SLA, and CX performance across a 3-year dataset | Weighted averages, ALLSELECTED(), shift-based baselines |
+| [Sales Performance](./sales) | ABC classification and stock health across warehouses | RANKX, cumulative %, Indian FY calendar |
 | [Inventory Analytics](./inventory-analytics) | ABC classification and stock health across warehouses | RANKX, cumulative %, Indian FY calendar |
 | [Global Startup Funding & Unicorn Analytics](./startups) | Tracking Global Startup Funding Activity | Unicorn Company Distribution | Sector-level Investment Trends
+| [Financial Statements](./financials) | Three Financial Statements | Profit & Loss | Balance Sheet | Cash Flow
+| [Recruitment](./recruitment) | HR analytics dashboard tracking the full Recruitment Funnel
+| [Growth Command Center](./growth) | One dashboard. Every morning. The full health of the business — revenue, marketing spend, leads, calls, sales, and ROAS, sliced by date range, platform, and sales rep.
+
 
 ## About Me
-
 I'm a freelance analytics consultant specialising in automation and business transformation — using Power BI, Excel, SQL and Python to turn scattered data into dashboards and models that leadership actually trusts.
 
 Over 18+ years across FP&A and analytics roles, I've built forecasting models, automated recurring reporting, and designed KPI frameworks that hold up under audit and under pressure. I partner with organisations to:
