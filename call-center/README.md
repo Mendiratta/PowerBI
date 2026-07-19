@@ -22,9 +22,15 @@ Call center leaders are usually stitching this picture together from separate AC
 4. **Customer Experience** — CSAT Trends, First-call Resolution
 
 ![Executive Overview](screenshots/executive.png)
-![Executive Overview](screenshots/staffing.png)
-![Executive Overview](screenshots/service.png)
-![Executive Overview](screenshots/customer.png)
+
+![Staffing & Efficiency](screenshots/staffing.png)
+
+![Service Quality & SLA](screenshots/service.png)
+
+![Customer Experience](screenshots/customers.png)
+
+![Call Center Analytics](screenshots/Call_Center.mp4)
+
 
 ## Key DAX Techniques
 - Weighted average measures (e.g., weighted AHT across call types, not a simple average)
