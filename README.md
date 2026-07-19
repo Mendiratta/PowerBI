@@ -48,9 +48,10 @@ Happy to start with a small paid diagnostic if you want to test the working rela
 Power BI, Microsoft Excel, DAX, Power Query, Python, Financial Modeling, Financial Angit commit -m "Initial portfolio scaffold"alysis, Data Visualization, Business Intelligence, Power Automate, SSAS, KPI Dashboard, Data Analytics, Statistical Analysis, Scenario Simulation.
 
 ## Contact
-- LinkedIn  : [LinkedIn](https://www.linkedin.com/in/vikram-mendiratta/)
-- Upwork    : [UpWork](https://www.upwork.com/freelancers/~01c49d03c2f8ee07d9?mp_source=share)
-- Email     : mendiratta@outlook.com
+- [LinkedIn](https://www.linkedin.com/in/vikram-mendiratta/)
+- [UpWork](https://www.upwork.com/freelancers/~01c49d03c2f8ee07d9?mp_source=share)
+- [Email](mendiratta@outlook.com)
+- [WhatsApp](https://api.whatsapp.com/send/?phone=919818003643&text=Hi+Vikram%2C+I%27d+like+to+talk+about+a+project.&type=phone_number&app_absent=0)
 
 ---
 *All datasets in this portfolio are synthetic and created solely for demonstration purposes. No real client or proprietary data is used.*
