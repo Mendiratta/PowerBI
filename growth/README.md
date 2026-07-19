@@ -26,13 +26,13 @@ Built to be **scalable by design** — a proper star-schema data model underneat
 
 ## Screenshots
 
-> ![Executive Overview](docs/screenshots/executive.png)
-> ![Campaign Performance](docs/screenshots/campaign.png)
-> ![Ad / Creative Performance](docs/screenshots/creative.png)
-> ![Platform Comparision](docs/screenshots/platform.png)
-> ![Sales Funnel](docs/screenshots/sales.png)
-> ![Sales Team](docs/screenshots/teams.png)
-> ![Trends](docs/screenshots/trend.png)
+> ![Executive Overview](gcc_flask/docs/screenshots/executive.png)
+> ![Campaign Performance](gcc_flask/docs/screenshots/campaign.png)
+> ![Ad / Creative Performance](gcc_flask/docs/screenshots/creative.png)
+> ![Platform Comparision](gcc_flask/docs/screenshots/platform.png)
+> ![Sales Funnel](gcc_flask/docs/screenshots/sales.png)
+> ![Sales Team](gcc_flask/docs/screenshots/teams.png)
+> ![Trends](gcc_flask/docs/screenshots/trend.png)
 > ```
 
 ---
@@ -45,85 +45,10 @@ Built to be **scalable by design** — a proper star-schema data model underneat
 | Backend | **Flask** | serves the dashboard page + a small `/api/data` endpoint that recomputes KPIs per filter selection |
 | Frontend | **HTML / CSS / vanilla JS + Chart.js** | no frontend framework — kept deliberately simple and fast |
 | Data source (current) | **Synthetic CSVs** (`/data`) | star schema: `dim_date`, `dim_campaign`, `dim_ad`, `dim_salesrep` + `fact_leads`, `fact_ad_spend` |
-| Data source (planned) | **Meta Ads API + Pipedrive API** | see [Roadmap](#roadmap) |
+| Data source (planned) | **Meta Ads API + Pipedrive API** | 
 
 ---
 
-## Project structure
-
-```
-gcc_flask/
-├── app.py                 # Flask app: "/" page route + "/api/data" JSON endpoint
-├── data_model.py            # pandas layer — filtering + KPI/aggregation logic
-├── requirements.txt
-├── data/                     # star-schema CSVs (synthetic sample data)
-│   ├── dim_date.csv
-│   ├── dim_campaign.csv
-│   ├── dim_ad.csv
-│   ├── dim_salesrep.csv
-│   ├── fact_leads.csv
-│   └── fact_ad_spend.csv
-├── static/
-│   ├── logo.png
-│   ├── favicon.ico
-│   └── ...                    # favicon set (see below)
-└── templates/
-    └── index.html              # the dashboard UI (Jinja2 template)
-```
-
----
-
-## Getting started
-
-### 1. Clone and install
-
-```bash
-git clone https://github.com/<your-username>/growth-command-center.git
-cd growth-command-center
-pip install -r requirements.txt
-```
-
-### 2. Run
-
-```bash
-python app.py
-```
-
-Open **http://127.0.0.1:5000** — filters (date range, platform, sales rep) call `/api/data` and re-render the whole page live.
-
----
-
-## Data model
-
-A star schema — the same shape you'd build in Power BI or any BI tool:
-
-```
-dim_date ──┐
-dim_campaign ──┤
-dim_ad ────────┼──< fact_leads
-dim_salesrep ──┘
-                
-dim_campaign ──┐
-dim_ad ────────┼──< fact_ad_spend
-dim_date ──────┘
-```
-
-- **`fact_leads`** — one row per lead: source ad/campaign, call booked/completed flags, sale won flag + value, assigned rep
-- **`fact_ad_spend`** — one row per ad, per day: spend
-- Dimension tables are small and mostly static — this is where a real Meta/Pipedrive integration would write incremental data on a schedule
-
-Core measures (in `data_model.py`, equivalent to DAX measures in Power BI):
-
-```python
-Total Revenue   = sum(fact_leads.sale_value)
-ROAS            = Total Revenue / Total Spend
-Cost Per Lead   = Total Spend / Total Leads
-Cost Per Sale   = Total Spend / Total Sales
-Show Rate       = Calls Completed / Calls Booked
-Conversion Rate = Sales / Leads
-```
-
----
 
 ## Dashboard sections
 
@@ -138,21 +63,9 @@ Conversion Rate = Sales / Leads
 | **Trends** | Daily / weekly / monthly view of any core metric |
 
 ---
-
-## Roadmap
-
-- [ ] Replace synthetic `fact_ad_spend.csv` with a scheduled **Meta Marketing API** pull
-- [ ] Replace synthetic `fact_leads.csv` with a scheduled **Pipedrive API** pull
-- [ ] Add Google Ads and TikTok Ads as additional platform sources
-- [ ] Add a country/geography filter
-- [ ] Scheduled daily refresh (cron / task scheduler) instead of on-demand recompute
-- [ ] Optional auth layer if this ever needs to be exposed beyond localhost
-
----
-
 ## License
 
-MIT — 
+MIT
 ---
 
 ## Author
