@@ -26,15 +26,13 @@ Built to be **scalable by design** — a proper star-schema data model underneat
 
 ## Screenshots
 
-> Add screenshots here once the repo is public — drag PNGs into a `docs/screenshots/` folder and reference them:
-> ```md
-> ![Executive Overview](screenshots/executive.png)
-> ![Campaign Performance](screenshots/campaign.png)
-> ![Ad / Creative Performance](screenshots/creative.png)
-> ![Platform Comparision](screenshots/platform.png)
-> ![Sales Funnel](screenshots/sales.png)
-> ![Sales Team](screenshots/teams.png)
-> ![Trends](screenshots/trend.png)
+> ![Executive Overview](docs/screenshots/executive.png)
+> ![Campaign Performance](docs/screenshots/campaign.png)
+> ![Ad / Creative Performance](docs/screenshots/creative.png)
+> ![Platform Comparision](docs/screenshots/platform.png)
+> ![Sales Funnel](docs/screenshots/sales.png)
+> ![Sales Team](docs/screenshots/teams.png)
+> ![Trends](docs/screenshots/trend.png)
 > ```
 
 ---

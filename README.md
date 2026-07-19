@@ -15,7 +15,7 @@ Hi, I'm Vikram Mendiratta — an FP&A and Business Intelligence professional wit
 |---|---|---|
 | [Sales & Receivables Analytics](./receivables) | DSO, CEI, and aging-bucket analysis for a distribution business | Star schema, point-in-time DAX, measure dispatcher pattern |
 | [Call Center Analytics](./call-center) | Staffing, SLA, and CX performance across a 3-year dataset | Weighted averages, ALLSELECTED(), shift-based baselines |
-| [Sales Performance](./sales) | ABC classification and stock health across warehouses | RANKX, cumulative %, Indian FY calendar |
+| [Sales Performance](./sales) |  |
 | [Inventory Analytics](./inventory-analytics) | ABC classification and stock health across warehouses | RANKX, cumulative %, Indian FY calendar |
 | [Global Startup Funding & Unicorn Analytics](./startups) | Tracking Global Startup Funding Activity | Unicorn Company Distribution | Sector-level Investment Trends
 | [Financial Statements](./financials) | Three Financial Statements | Profit & Loss | Balance Sheet | Cash Flow
